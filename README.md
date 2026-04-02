@@ -8,3 +8,4 @@ Realistic ball physics (gravity + jump force)
 Moving hoop for increasing difficulty
 Score tracking system
 Fast, addictive gameplay loop
+![Class Diagram](https://github.com/431136-ai/Project/blob/main/Images/mermaid-diagram.png)
