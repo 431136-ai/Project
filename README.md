@@ -9,3 +9,4 @@ Moving hoop for increasing difficulty
 Score tracking system
 Fast, addictive gameplay loop
 ![Class Diagram](https://github.com/431136-ai/Project/blob/main/Images/mermaid-diagram.png)
+![](https://github.com/431136-ai/Project/blob/main/Images/ChatGPT%20Image%20Mar%2031%2C%202026%20at%2012_35_22%20PM.png)
