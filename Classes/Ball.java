@@ -1,19 +1,25 @@
 public class Ball {
-    double x = 100, y = 300;
-    int radius = 15;
-    double velocityV = 0;
-    double velocityH = 3.5; 
-    final double jumpForce = -10;
-    
-    // Tracks if the ball touched anything before scoring
-    boolean hitRimOrBoard = false; 
+    double x = 150; // Fixed horizontal position
+    double y = 300;
+    double vy = 0;
+    int radius = 18;
+    double gravity = 0.45;
+    double jumpForce = -9.5;
+    boolean touchedGround = false;
 
     public void jump() {
-        velocityV = jumpForce;
+        vy = jumpForce;
     }
 
-    public void wrapAround(int canvasWidth) {
-        if (x > canvasWidth) x = -radius;
-        else if (x < -radius) x = canvasWidth;
+    public void applyPhysics(int groundY) {
+        vy += gravity;
+        y += vy;
+
+        // Ground Bounce
+        if (y + (radius * 2) > groundY) {
+            y = groundY - (radius * 2);
+            vy *= -0.5;
+            touchedGround = true; // Streak resets if you hit the floor
+        }
     }
 }
