@@ -4,9 +4,7 @@ public class Ball {
     double velocityV = 0;
     double velocityH = 3.5; 
     final double jumpForce = -10;
-    
-    // Tracks if the ball touched anything before scoring
-    boolean hitRimOrBoard = false; 
+    boolean hitRim = false; 
 
     public void jump() {
         velocityV = jumpForce;
