@@ -1,4 +1,4 @@
- import javax.swing.*;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -28,7 +28,11 @@ public class TapTapShoot extends JPanel implements ActionListener {
 
     private void resetGame() {
         ball = new Ball();
-        hoop.teleport(800);
+        hoop = new Hoop(800); 
+        
+        // Ensure ball moves toward initial hoop position
+        ball.velocityH = hoop.isOnRight ? 4.0 : -4.0;
+        
         scoreManager.reset();
         timeManager.reset();
         gameState = 1;
@@ -39,15 +43,24 @@ public class TapTapShoot extends JPanel implements ActionListener {
             physics.applyPhysics(ball, getWidth(), hoop);
             timeManager.update();
 
+            // S C O R E   L O G I C
             if (physics.checkScore(ball, hoop)) {
                 scoreManager.scoreBasket(!ball.hitRim);
                 timeManager.reset();
+                
+                // 1. Move hoop to the strict opposite side
                 hoop.teleport(getWidth());
-                ball.y = -50; 
-                ball.velocityV = 2; // Slight downward start
+                
+                // 2. Drop ball from top of screen, keeping its current X position!
+                ball.y = -30; 
+                
+                // 3. Force velocity direction immediately to the opposite side
+                ball.velocityH = hoop.isOnRight ? 4.0 : -4.0;
+                ball.velocityV = 2; // Slight downward push to start the fall
                 ball.hitRim = false; 
             }
 
+            // Game over if ball hits the ground or time runs out
             if (ball.y > getHeight() || timeManager.isTimeUp()) gameState = 2;
         }
         repaint();
@@ -58,13 +71,13 @@ public class TapTapShoot extends JPanel implements ActionListener {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(new Color(20, 24, 35)); // Sleek dark blue/gray
+        g2.setColor(new Color(20, 24, 35));
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         if (gameState == 0) {
             drawScreen(g2, "TAP TAP SHOOT", "Press SPACE to Play");
         } else {
-            // Draw Hoop (A clean orange line with a net)
+            // Draw Hoop 
             g2.setColor(new Color(255, 80, 0));
             g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawLine((int)hoop.x, (int)hoop.y, (int)(hoop.x + hoop.width), (int)hoop.y);
@@ -114,7 +127,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
     }
 
     public static void main(String[] args) {
-        JFrame f = new JFrame("Tap Tap Shoot Classic");
+        JFrame f = new JFrame("Tap Tap Shoot");
         f.add(new TapTapShoot());
         f.setSize(800, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
