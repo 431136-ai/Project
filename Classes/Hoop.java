@@ -1,19 +1,21 @@
 public class Hoop {
     double x, y;
-    int width = 85; // Slightly wider for a better "feel"
-    boolean isOnRight = false;
+    int width = 85; 
+    boolean isOnRight = false; // Alternates properly
 
     public Hoop(int canvasWidth) {
         teleport(canvasWidth);
     }
 
     public void teleport(int canvasWidth) {
-        isOnRight = !isOnRight;
-        this.y = 180 + (Math.random() * 220);
+        isOnRight = !isOnRight; 
+        this.y = 180 + (Math.random() * 220); // Keep Y random for vertical challenge
+        
+        // Strictly left or right side placement
         if (isOnRight) {
-            this.x = (canvasWidth / 2) + 50 + (Math.random() * ((canvasWidth / 2) - 150));
+            this.x = canvasWidth - width - 60; // Far right
         } else {
-            this.x = 50 + (Math.random() * ((canvasWidth / 2) - 150));
+            this.x = 60; // Far left
         }
     }
 }
