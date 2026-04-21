@@ -1,11 +1,10 @@
-import javax.swing.*;
+ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
 public class TapTapShoot extends JPanel implements ActionListener {
     private Ball ball = new Ball();
     private Hoop hoop = new Hoop(800);
-    private Backboard backboard = new Backboard();
     private PhysicsEngine physics = new PhysicsEngine();
     private ScoreManager scoreManager = new ScoreManager();
     private TimeManager timeManager = new TimeManager();
@@ -29,7 +28,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
 
     private void resetGame() {
         ball = new Ball();
-        hoop = new Hoop(800);
+        hoop.teleport(800);
         scoreManager.reset();
         timeManager.reset();
         gameState = 1;
@@ -37,22 +36,16 @@ public class TapTapShoot extends JPanel implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (gameState == 1) {
-            physics.applyPhysics(ball, getWidth(), hoop, backboard);
+            physics.applyPhysics(ball, getWidth(), hoop);
             timeManager.update();
 
-            // Check if scored!
             if (physics.checkScore(ball, hoop)) {
-                // If it never touched rim or board, it's a swish!
-                boolean isSwish = !ball.hitRimOrBoard;
-                scoreManager.scoreBasket(isSwish);
-                
-                timeManager.reset(); // Full time restore
-                hoop.teleport(getWidth()); // Move hoop to new side
-                
-                // Reset ball state for the next shot
-                ball.y = 50; 
-                ball.velocityV = 0;
-                ball.hitRimOrBoard = false; 
+                scoreManager.scoreBasket(!ball.hitRim);
+                timeManager.reset();
+                hoop.teleport(getWidth());
+                ball.y = -50; 
+                ball.velocityV = 2; // Slight downward start
+                ball.hitRim = false; 
             }
 
             if (ball.y > getHeight() || timeManager.isTimeUp()) gameState = 2;
@@ -65,64 +58,63 @@ public class TapTapShoot extends JPanel implements ActionListener {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g.setColor(new Color(30, 30, 30));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g2.setColor(new Color(20, 24, 35)); // Sleek dark blue/gray
+        g2.fillRect(0, 0, getWidth(), getHeight());
 
         if (gameState == 0) {
             drawScreen(g2, "TAP TAP SHOOT", "Press SPACE to Play");
         } else {
+            // Draw Hoop (A clean orange line with a net)
+            g2.setColor(new Color(255, 80, 0));
+            g2.setStroke(new BasicStroke(5, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.drawLine((int)hoop.x, (int)hoop.y, (int)(hoop.x + hoop.width), (int)hoop.y);
+            
+            // Draw Net
+            g2.setColor(new Color(255, 255, 255, 80));
+            g2.setStroke(new BasicStroke(1));
+            g2.drawLine((int)hoop.x, (int)hoop.y, (int)hoop.x + 8, (int)hoop.y + 35);
+            g2.drawLine((int)hoop.x + hoop.width, (int)hoop.y, (int)hoop.x + hoop.width - 8, (int)hoop.y + 35);
+
             // Draw Ball
-            g2.setColor(Color.ORANGE);
+            g2.setColor(new Color(240, 100, 30));
             g2.fillOval((int)ball.x, (int)ball.y, ball.radius*2, ball.radius*2);
+            g2.setColor(Color.BLACK);
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.drawOval((int)ball.x, (int)ball.y, ball.radius*2, ball.radius*2);
 
-            // Draw Hoop (Gap in the middle, rims on the side)
-            g2.setColor(Color.GRAY); // Left Rim
-            Rectangle lRim = hoop.getLeftRim();
-            g2.fillRect(lRim.x, lRim.y, lRim.width, lRim.height);
-            
-            g2.setColor(Color.GRAY); // Right Rim
-            Rectangle rRim = hoop.getRightRim();
-            g2.fillRect(rRim.x, rRim.y, rRim.width, rRim.height);
-
-            // Draw Backboard
-            Rectangle b = backboard.getBounds(hoop);
+            // UI
             g2.setColor(Color.WHITE);
-            g2.fillRect(b.x, b.y, b.width, b.height);
-            g2.setColor(Color.RED); // Little red square on backboard
-            g2.fillRect(b.x, b.y + 30, b.width, 20);
-
-            // Draw Time Bar
-            g2.setColor(Color.DARK_GRAY);
-            g2.fillRect(250, 20, 300, 15);
-            g2.setColor(timeManager.timeLeft < 30 ? Color.RED : Color.GREEN);
-            g2.fillRect(250, 20, (int)(3 * timeManager.timeLeft), 15);
-
-            // Draw Score and Streak
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 24));
-            g2.drawString("Score: " + scoreManager.getScore(), 20, 35);
-            
+            g2.setFont(new Font("Arial", Font.BOLD, 22));
+            g2.drawString("Score: " + scoreManager.getScore(), 30, 45);
             if (scoreManager.getStreak() > 0) {
                 g2.setColor(Color.ORANGE);
-                g2.drawString("STREAK x" + scoreManager.getStreak() + " 🔥", 20, 65);
+                g2.drawString("STREAK x" + scoreManager.getStreak() + " 🔥", 30, 75);
             }
 
-            if (gameState == 2) drawScreen(g2, "GAME OVER", "Space to Restart");
+            // Time Bar
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRoundRect(getWidth()/2 - 150, 25, 300, 12, 10, 10);
+            g2.setColor(timeManager.timeLeft < 30 ? Color.RED : Color.GREEN);
+            g2.fillRoundRect(getWidth()/2 - 150, 25, (int)(3 * timeManager.timeLeft), 12, 10, 10);
+
+            if (gameState == 2) drawScreen(g2, "GAME OVER", "Final Score: " + scoreManager.getScore());
         }
     }
 
     private void drawScreen(Graphics2D g, String main, String sub) {
-        g.setColor(new Color(0,0,0,150));
-        g.fillRect(0,0,800,600);
+        g.setColor(new Color(0,0,0,180));
+        g.fillRect(0,0,getWidth(),getHeight());
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 40));
-        g.drawString(main, 250, 250);
+        g.setFont(new Font("Arial", Font.BOLD, 45));
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(main, (getWidth() - fm.stringWidth(main)) / 2, 260);
         g.setFont(new Font("Arial", Font.PLAIN, 20));
-        g.drawString(sub, 300, 300);
+        fm = g.getFontMetrics();
+        g.drawString(sub, (getWidth() - fm.stringWidth(sub)) / 2, 310);
     }
 
     public static void main(String[] args) {
-        JFrame f = new JFrame("Tap Tap Shoot");
+        JFrame f = new JFrame("Tap Tap Shoot Classic");
         f.add(new TapTapShoot());
         f.setSize(800, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
