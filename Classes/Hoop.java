@@ -1,17 +1,18 @@
 public class Hoop {
     double x, y;
-    int width = 60; // Increased from 45 for better playability
-    boolean isOnRight = false; 
+    int height = 80; // The vertical "opening"
+    double speed = 3.5; // The screen "scroll" speed
 
-    public Hoop(int w) { 
-        teleport(w); 
+    public Hoop(int canvasWidth) {
+        reset(canvasWidth);
     }
 
-    public void teleport(int w) {
-        isOnRight = !isOnRight; 
-        // Random height between 180 and 400
-        this.y = 180 + (Math.random() * 220); 
-        // Position it on the far left or far right
-        this.x = isOnRight ? w - width - 80 : 80;
+    public void reset(int canvasWidth) {
+        this.x = canvasWidth + 50; // Spawn off-screen to the right
+        this.y = 100 + (Math.random() * 300); // Random vertical position
+    }
+
+    public void move() {
+        this.x -= speed; // Move toward the player
     }
 }
