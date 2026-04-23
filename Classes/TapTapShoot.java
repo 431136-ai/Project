@@ -44,7 +44,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
                 scoreManager.scoreBasket(!ball.hitRim);
                 timeManager.reset();
                 hoop.teleport(getWidth());
-                ball.y = -30; // Reset Y to top
+                ball.y = -30; 
                 ball.velocityH = hoop.isOnRight ? 4.0 : -4.0;
                 ball.velocityV = 2; 
                 ball.hitRim = false; 
@@ -60,13 +60,27 @@ public class TapTapShoot extends JPanel implements ActionListener {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(new Color(15, 18, 28)); // Background
+        g2.setColor(new Color(15, 18, 28)); 
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         if (gameState == 0) {
             drawHomeScreen(g2);
         } else {
-            // Draw Hoop
+            // Draw Visual Net
+            g2.setColor(new Color(255, 255, 255, 120));
+            g2.setStroke(new BasicStroke(1.5f));
+            int netHeight = 40;
+            // Vertical strings
+            for (int i = 0; i <= 4; i++) {
+                int startX = (int)hoop.x + (i * hoop.width / 4);
+                int endX = (int)hoop.x + (hoop.width / 4) + (i * (hoop.width / 2) / 4);
+                g2.drawLine(startX, (int)hoop.y, (int)(hoop.x + 10 + i * (hoop.width-20)/4), (int)hoop.y + netHeight);
+            }
+            // Horizontal rings
+            g2.drawLine((int)hoop.x + 4, (int)hoop.y + 15, (int)(hoop.x + hoop.width - 4), (int)hoop.y + 15);
+            g2.drawLine((int)hoop.x + 8, (int)hoop.y + 30, (int)(hoop.x + hoop.width - 8), (int)hoop.y + 30);
+
+            // Draw Hoop Rim
             g2.setColor(new Color(255, 60, 0));
             g2.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawLine((int)hoop.x, (int)hoop.y, (int)(hoop.x + hoop.width), (int)hoop.y);
@@ -78,7 +92,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
             g2.setStroke(new BasicStroke(2f));
             g2.drawOval((int)ball.x, (int)ball.y, ball.radius*2, ball.radius*2);
 
-            // Score & Streak UI
+            // UI
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Verdana", Font.BOLD, 22));
             g2.drawString("Score: " + scoreManager.getScore(), 30, 45);
@@ -87,7 +101,6 @@ public class TapTapShoot extends JPanel implements ActionListener {
                 g2.drawString("STREAK x" + scoreManager.getStreak() + " 🔥", 30, 80);
             }
 
-            // Time Bar
             g2.setColor(new Color(40, 40, 50));
             g2.fillRoundRect(getWidth()/2 - 150, 25, 300, 12, 10, 10);
             g2.setColor(timeManager.timeLeft < 30 ? Color.RED : Color.GREEN);
@@ -102,7 +115,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
         g.setColor(new Color(255, 60, 0, 100));
         String title = "TAP TAP SHOOT";
         int tx = (getWidth() - g.getFontMetrics().stringWidth(title)) / 2;
-        g.drawString(title, tx + 4, 204); // Shadow
+        g.drawString(title, tx + 4, 204); 
         g.setColor(Color.WHITE);
         g.drawString(title, tx, 200);
 
