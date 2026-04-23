@@ -34,26 +34,16 @@ public class TapTapShoot extends JPanel implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (gameState == 1) {
-            physics.applyPhysics(ball, hoop);
-            hoop.move(); // Scroll the hoop left
+            physics.applyPhysics(ball, getWidth(), hoop);
 
-            // 1. Check for a score
-            if (!hoop.isScored && physics.checkScore(ball, hoop)) {
-                hoop.isScored = true;
+            // Check if scored
+            if (physics.checkScore(ball, hoop)) {
                 scoreManager.scoreBasket(!ball.hitRim);
-                ball.hitRim = false;
+                hoop.reset(getWidth()); // Spawn on opposite side
+                ball.hitRim = false; 
             }
 
-            // 2. Hoop goes off screen (Pass or Fail)
-            if (hoop.x + hoop.width < 0) {
-                if (!hoop.isScored) {
-                    gameState = 2; // You missed! Game Over.
-                } else {
-                    hoop.reset(getWidth()); // Spawn the next one
-                }
-            }
-
-            // 3. Fall off screen
+            // Lose if ball falls off the bottom or hits the top
             if (ball.y > getHeight() || ball.y < -50) gameState = 2;
         }
         repaint();
@@ -70,7 +60,16 @@ public class TapTapShoot extends JPanel implements ActionListener {
         if (gameState == 0) {
             drawHomeScreen(g2);
         } else {
-            // Draw Dynamic Net
+            // --- DRAW BACKBOARD ---
+            g2.setColor(Color.WHITE);
+            g2.setStroke(new BasicStroke(4));
+            if (hoop.isOnRight) {
+                g2.drawLine((int)(hoop.x + hoop.width + 5), (int)hoop.y - 40, (int)(hoop.x + hoop.width + 5), (int)hoop.y + 20);
+            } else {
+                g2.drawLine((int)(hoop.x - 5), (int)hoop.y - 40, (int)(hoop.x - 5), (int)hoop.y + 20);
+            }
+
+            // --- DRAW NET ---
             g2.setColor(new Color(255, 255, 255, 120));
             g2.setStroke(new BasicStroke(1.5f));
             int netH = 45, bWidth = hoop.width - 20, offset = 10;
@@ -82,19 +81,19 @@ public class TapTapShoot extends JPanel implements ActionListener {
             g2.drawLine((int)hoop.x + 3, (int)hoop.y + 15, (int)(hoop.x + hoop.width - 3), (int)hoop.y + 15);
             g2.drawLine((int)hoop.x + 7, (int)hoop.y + 30, (int)(hoop.x + hoop.width - 7), (int)hoop.y + 30);
 
-            // Draw Hoop Rim
+            // --- DRAW HOOP RIM ---
             g2.setColor(new Color(255, 60, 0));
             g2.setStroke(new BasicStroke(6, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawLine((int)hoop.x, (int)hoop.y, (int)(hoop.x + hoop.width), (int)hoop.y);
             
-            // Draw Ball
+            // --- DRAW BALL ---
             g2.setColor(new Color(240, 110, 40));
             g2.fillOval((int)ball.x, (int)ball.y, ball.radius*2, ball.radius*2);
             g2.setColor(Color.BLACK);
             g2.setStroke(new BasicStroke(2f));
             g2.drawOval((int)ball.x, (int)ball.y, ball.radius*2, ball.radius*2);
 
-            // UI
+            // --- UI ---
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Verdana", Font.BOLD, 22));
             g2.drawString("Score: " + scoreManager.getScore(), 30, 45);
@@ -118,7 +117,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
 
         g.setFont(new Font("Verdana", Font.PLAIN, 18));
         g.setColor(new Color(200, 200, 200));
-        String[] lines = {"Tap SPACE to fly", "Score before the hoop passes you", "PRESS [SPACE] TO START"};
+        String[] lines = {"Tap SPACE to fly", "Bounce off walls and score!", "PRESS [SPACE] TO START"};
         int y = 280;
         for (String l : lines) {
             g.drawString(l, (getWidth() - g.getFontMetrics().stringWidth(l)) / 2, y);
@@ -139,7 +138,7 @@ public class TapTapShoot extends JPanel implements ActionListener {
     }
 
     public static void main(String[] args) {
-        JFrame f = new JFrame("Tap Tap Runner");
+        JFrame f = new JFrame("Tap Tap Arena");
         f.add(new TapTapShoot());
         f.setSize(800, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
