@@ -1,22 +1,34 @@
 public class PhysicsEngine {
     double gravity = 0.45;
     double friction = 0.65; 
-    double targetX = 250; // The resting X position of the ball
+    double minH = 3.5; // Minimum horizontal speed
 
-    public void applyPhysics(Ball ball, Hoop hoop) {
+    public void applyPhysics(Ball ball, int canvasWidth, Hoop hoop) {
         ball.velocityV += gravity;
         ball.y += ball.velocityV;
 
-        // Soft spring: gently pulls the ball back to the left side of the screen
-        ball.velocityH += (targetX - ball.x) * 0.05;
-        ball.velocityH *= 0.9; // Dampens the bouncing so it doesn't swing wildly
+        // Enforce minimum horizontal speed
+        if (Math.abs(ball.velocityH) < minH) {
+            ball.velocityH = (ball.velocityH < 0) ? -minH : minH;
+        }
+        
         ball.x += ball.velocityH;
 
-        resolveRimBounce(ball, hoop.x, hoop.y, hoop.speed);
-        resolveRimBounce(ball, hoop.x + hoop.width, hoop.y, hoop.speed);
+        // Wall Bouncing (Left and Right edges)
+        if (ball.x - ball.radius < 0) {
+            ball.x = ball.radius; // Prevent sticking
+            ball.velocityH = Math.abs(ball.velocityH); // Force right
+        } else if (ball.x + ball.radius > canvasWidth) {
+            ball.x = canvasWidth - ball.radius; // Prevent sticking
+            ball.velocityH = -Math.abs(ball.velocityH); // Force left
+        }
+
+        // Rim collisions
+        resolveRimBounce(ball, hoop.x, hoop.y);
+        resolveRimBounce(ball, hoop.x + hoop.width, hoop.y);
     }
 
-    private void resolveRimBounce(Ball ball, double rx, double ry, double hoopSpeed) {
+    private void resolveRimBounce(Ball ball, double rx, double ry) {
         double bx = ball.x + ball.radius;
         double by = ball.y + ball.radius;
         double dx = bx - rx, dy = by - ry;
@@ -25,10 +37,7 @@ public class PhysicsEngine {
         if (dist < ball.radius) {
             ball.hitRim = true;
             double nx = dx/dist, ny = dy/dist;
-            
-            // Factor in the hoop's movement for realistic bouncing
-            double relVelH = ball.velocityH - (-hoopSpeed); 
-            double dot = relVelH * nx + ball.velocityV * ny;
+            double dot = ball.velocityH * nx + ball.velocityV * ny;
             
             ball.velocityH = (ball.velocityH - 2 * dot * nx) * friction;
             ball.velocityV = (ball.velocityV - 2 * dot * ny) * friction;
@@ -39,7 +48,6 @@ public class PhysicsEngine {
     }
 
     public boolean checkScore(Ball b, Hoop h) {
-        // Must pass through the TOP of the hoop
         return b.x + b.radius > h.x && b.x + b.radius < h.x + h.width &&
                b.y + b.radius > h.y && b.y + b.radius < h.y + 15 && b.velocityV > 0;
     }
