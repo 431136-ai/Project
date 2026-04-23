@@ -7,13 +7,13 @@ public class TapTapShoot extends JPanel implements ActionListener {
     private Hoop hoop = new Hoop(800);
     private PhysicsEngine physics = new PhysicsEngine();
     private int score = 0;
-    private int gameState = 0; // 0: Menu, 1: Play, 2: Dead
+    private int gameState = 0; 
     private Timer timer;
 
     public TapTapShoot() {
         timer = new Timer(16, this);
         timer.start();
-        ball.x = 150; // Ball stays on the left side
+        ball.x = 150; // Fix ball position on the left
         setFocusable(true);
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
@@ -39,14 +39,14 @@ public class TapTapShoot extends JPanel implements ActionListener {
             physics.applyPhysics(ball);
             hoop.move();
 
-            // Check Score
+            // Check if ball passed the gate
             if (physics.checkPassThrough(ball, hoop)) {
                 score++;
-                hoop.reset(800); // Send next hoop
+                hoop.reset(getWidth()); // Spawn next gate
             }
 
-            // LOSE CONDITION: Hoop missed or Ball hits floor/ceiling
-            if (hoop.x < -20 || ball.y > 600 || ball.y < -50) {
+            // Lose: Gate passed you, or you hit the top/bottom
+            if (hoop.x < ball.x - 50 || ball.y > getHeight() || ball.y < -20) {
                 gameState = 2;
             }
         }
@@ -58,43 +58,48 @@ public class TapTapShoot extends JPanel implements ActionListener {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Background
-        g2.setColor(new Color(10, 15, 25));
+        g2.setColor(new Color(15, 18, 28)); 
         g2.fillRect(0, 0, getWidth(), getHeight());
 
         if (gameState == 1) {
-            // Draw Vertical Hoop (The Gate)
-            g2.setColor(Color.CYAN);
-            g2.setStroke(new BasicStroke(8));
-            // Draw top and bottom "posts" of the hoop
+            // Draw Vertical Neon Gate
+            g2.setColor(new Color(0, 255, 200));
+            g2.setStroke(new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            // Top pillar
             g2.drawLine((int)hoop.x, 0, (int)hoop.x, (int)hoop.y);
+            // Bottom pillar
             g2.drawLine((int)hoop.x, (int)hoop.y + hoop.height, (int)hoop.x, getHeight());
 
             // Draw Ball
-            g2.setColor(Color.ORANGE);
+            g2.setColor(new Color(240, 110, 40));
             g2.fillOval((int)ball.x - ball.radius, (int)ball.y - ball.radius, ball.radius*2, ball.radius*2);
 
-            // Score
+            // UI
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 30));
+            g2.setFont(new Font("Verdana", Font.BOLD, 25));
             g2.drawString("Score: " + score, 30, 50);
-        } else if (gameState == 2) {
-            g2.setColor(Color.WHITE);
-            g2.drawString("MISSED THE HOOP! Final Score: " + score, 200, 300);
-            g2.drawString("Press Space to Restart", 280, 350);
         } else {
-            g2.setColor(Color.WHITE);
-            g2.drawString("FLAPPY HOOPS: VERTICAL EDITION", 200, 250);
-            g2.drawString("Pass through the gates. Don't let them pass you!", 180, 300);
-            g2.drawString("Press Space to Start", 300, 350);
+            drawMenu(g2);
         }
     }
 
+    private void drawMenu(Graphics2D g2) {
+        g2.setColor(Color.WHITE);
+        String text = (gameState == 0) ? "VERTICAL SHOOTER" : "GAME OVER! Score: " + score;
+        g2.setFont(new Font("Impact", Font.PLAIN, 50));
+        g2.drawString(text, (getWidth() - g2.getFontMetrics().stringWidth(text))/2, 250);
+        
+        g2.setFont(new Font("Verdana", Font.PLAIN, 18));
+        String sub = "Press SPACE to Fly through the gates";
+        g2.drawString(sub, (getWidth() - g2.getFontMetrics().stringWidth(sub))/2, 300);
+    }
+
     public static void main(String[] args) {
-        JFrame f = new JFrame();
+        JFrame f = new JFrame("Vertical Tap Tap");
         f.add(new TapTapShoot());
         f.setSize(800, 600);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setLocationRelativeTo(null);
         f.setVisible(true);
     }
 }
