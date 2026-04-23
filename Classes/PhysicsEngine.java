@@ -41,4 +41,4 @@ public class PhysicsEngine {
         return b.x + b.radius > h.x && b.x + b.radius < h.x + h.width &&
                b.y + b.radius > h.y && b.y + b.radius < h.y + 15 && b.velocityV > 0;
     }
-}+
+}
