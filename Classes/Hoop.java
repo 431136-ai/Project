@@ -1,6 +1,6 @@
 public class Hoop {
     double x, y;
-    int width = 45; // Pro size
+    int width = 60; // Increased from 45 for better playability
     boolean isOnRight = false; 
 
     public Hoop(int w) { 
@@ -8,7 +8,7 @@ public class Hoop {
     }
 
     public void teleport(int w) {
-        isOnRight = !isOnRight; // Strict alternation
+        isOnRight = !isOnRight; 
         // Random height between 180 and 400
         this.y = 180 + (Math.random() * 220); 
         // Position it on the far left or far right
