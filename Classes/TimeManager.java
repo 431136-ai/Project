@@ -1,10 +1,22 @@
 public class TimeManager {
-    float timeLeft = 100, drainRate = 0.22f;
+    double timeLeft;
+    double maxTime = 100.0; // Starting time in "units"
 
-    public void update() { 
-        if (timeLeft > 0) timeLeft -= drainRate; 
+    public TimeManager() {
+        reset();
     }
-    
-    public boolean isTimeUp() { return timeLeft <= 0; }
-    public void reset() { timeLeft = 100; }
+
+    public void reset() {
+        timeLeft = maxTime;
+    }
+
+    public void update() {
+        if (timeLeft > 0) {
+            timeLeft -= 0.25; // Speed of the countdown
+        }
+    }
+
+    public boolean isTimeUp() {
+        return timeLeft <= 0;
+    }
 }
