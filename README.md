@@ -8,5 +8,11 @@ Realistic ball physics (gravity + jump force)
 Moving hoop for increasing difficulty
 Score tracking system
 Fast, addictive gameplay loop
+##How To Load 
+1. download the zip file
+2. open it in finder
+3. Right click on the classes folder and choose new terminal at folder
+4. then type javac *.java
+5. then type java TapTapShoot
 ![Class Diagram](https://github.com/431136-ai/Project/blob/main/Images/mermaid-diagram.png)
 ![](https://github.com/431136-ai/Project/blob/main/Images/ChatGPT%20Image%20Mar%2031%2C%202026%20at%2012_35_22%20PM.png)
