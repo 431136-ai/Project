@@ -8,7 +8,7 @@ Realistic ball physics (gravity + jump force)
 Moving hoop for increasing difficulty
 Score tracking system
 Fast, addictive gameplay loop
-##How To Load 
+## How To Load 
 1. download the zip file
 2. open it in finder
 3. Right click on the classes folder and choose new terminal at folder
