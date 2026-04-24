@@ -2,13 +2,13 @@
 public class PhysicsEngine {
     double gravity = 0.45;
     double friction = 0.65; 
-    double moveSpeed = 4.5; // Constant forward speed
+    double moveSpeed = 4.5;
 
     public void applyPhysics(Ball ball, int canvasWidth, int canvasHeight, Hoop hoop) {
         ball.velocityV += gravity;
         ball.y += ball.velocityV;
 
-        // 1. Move towards the hoop
+        // Move horizontally
         if (hoop.isOnRight) {
             ball.velocityH = moveSpeed;
         } else {
@@ -16,48 +16,41 @@ public class PhysicsEngine {
         }
         ball.x += ball.velocityH;
 
-        // --- 2. SCREEN WRAPPING (The Pac-Man Effect) ---
-        // If it goes entirely past the right edge, teleport to the left
-        if (ball.x > canvasWidth) {
-            ball.x = -ball.radius * 2; 
+        // --- BACKBOARD COLLISION ---
+        // If hoop is on right, backboard is at x + width + 5
+        if (hoop.isOnRight && ball.x + ball.radius * 2 > hoop.x + hoop.width + 5) {
+            ball.x = hoop.x + hoop.width + 5 - ball.radius * 2;
+            ball.velocityH = -moveSpeed; // Bounce back
         } 
-        // If it goes entirely past the left edge, teleport to the right
-        else if (ball.x + ball.radius * 2 < 0) {
-            ball.x = canvasWidth;
+        // If hoop is on left, backboard is at x - 5
+        else if (!hoop.isOnRight && ball.x < hoop.x - 5) {
+            ball.x = hoop.x - 5;
+            ball.velocityH = moveSpeed; // Bounce back
         }
 
-        // 3. CEILING (Don't die, just bounce down)
-        if (ball.y < 0) {
-            ball.y = 0;
-            ball.velocityV = Math.abs(ball.velocityV) * 0.3; // Soft bump
-        }
+        // --- SCREEN WRAPPING (Only if not hitting backboard) ---
+        if (ball.x > canvasWidth) ball.x = -ball.radius * 2;
+        else if (ball.x + ball.radius * 2 < 0) ball.x = canvasWidth;
 
-        // 4. FLOOR (Don't die, just bounce and slide)
+        // Ceiling and Floor
+        if (ball.y < 0) { ball.y = 0; ball.velocityV = Math.abs(ball.velocityV) * 0.3; }
         if (ball.y + ball.radius * 2 > canvasHeight) {
             ball.y = canvasHeight - ball.radius * 2;
-            ball.velocityV = -Math.abs(ball.velocityV) * 0.5; // Bounce off the floor
+            ball.velocityV = -Math.abs(ball.velocityV) * 0.5;
         }
 
-        // 5. Rim collisions
         resolveRimBounce(ball, hoop.x, hoop.y);
         resolveRimBounce(ball, hoop.x + hoop.width, hoop.y);
     }
 
     private void resolveRimBounce(Ball ball, double rx, double ry) {
-        double bx = ball.x + ball.radius;
-        double by = ball.y + ball.radius;
+        double bx = ball.x + ball.radius, by = ball.y + ball.radius;
         double dx = bx - rx, dy = by - ry;
         double dist = Math.sqrt(dx*dx + dy*dy);
-
         if (dist < ball.radius) {
             ball.hitRim = true;
             double ny = dy/dist;
-            
-            // Only affect vertical velocity so it doesn't push you backward
-            if (ball.velocityV > 0 && ny < 0) {
-                ball.velocityV = -ball.velocityV * friction;
-            }
-            
+            if (ball.velocityV > 0 && ny < 0) ball.velocityV = -ball.velocityV * friction;
             ball.y = ry + ny * ball.radius - ball.radius;
         }
     }
