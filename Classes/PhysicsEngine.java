@@ -1,29 +1,33 @@
 public class PhysicsEngine {
     double gravity = 0.45;
     double friction = 0.65; 
-    double minH = 3.5; // Minimum horizontal speed
+    double moveSpeed = 4.5; // Constant forward speed
 
-    public void applyPhysics(Ball ball, int canvasWidth, Hoop hoop) {
+    public void applyPhysics(Ball ball, int canvasWidth, int canvasHeight, Hoop hoop) {
         ball.velocityV += gravity;
         ball.y += ball.velocityV;
 
-        // Enforce minimum horizontal speed
-        if (Math.abs(ball.velocityH) < minH) {
-            ball.velocityH = (ball.velocityH < 0) ? -minH : minH;
+        // 1. ALWAYS move towards the hoop! No moving backward.
+        if (hoop.isOnRight) {
+            ball.velocityH = moveSpeed;
+        } else {
+            ball.velocityH = -moveSpeed;
         }
-        
         ball.x += ball.velocityH;
 
-        // Wall Bouncing (Left and Right edges)
-        if (ball.x - ball.radius < 0) {
-            ball.x = ball.radius; // Prevent sticking
-            ball.velocityH = Math.abs(ball.velocityH); // Force right
-        } else if (ball.x + ball.radius > canvasWidth) {
-            ball.x = canvasWidth - ball.radius; // Prevent sticking
-            ball.velocityH = -Math.abs(ball.velocityH); // Force left
+        // 2. CEILING (Don't die, just bounce down)
+        if (ball.y < 0) {
+            ball.y = 0;
+            ball.velocityV = Math.abs(ball.velocityV) * 0.3; // Soft bump on the ceiling
         }
 
-        // Rim collisions
+        // 3. FLOOR (Don't die, just bounce and slide)
+        if (ball.y + ball.radius * 2 > canvasHeight) {
+            ball.y = canvasHeight - ball.radius * 2;
+            ball.velocityV = -Math.abs(ball.velocityV) * 0.5; // Bounce off the floor
+        }
+
+        // 4. Rim collisions (Only bounce vertically so it doesn't push you backward!)
         resolveRimBounce(ball, hoop.x, hoop.y);
         resolveRimBounce(ball, hoop.x + hoop.width, hoop.y);
     }
@@ -36,13 +40,14 @@ public class PhysicsEngine {
 
         if (dist < ball.radius) {
             ball.hitRim = true;
-            double nx = dx/dist, ny = dy/dist;
-            double dot = ball.velocityH * nx + ball.velocityV * ny;
+            double ny = dy/dist;
             
-            ball.velocityH = (ball.velocityH - 2 * dot * nx) * friction;
-            ball.velocityV = (ball.velocityV - 2 * dot * ny) * friction;
+            // Only affect vertical velocity
+            if (ball.velocityV > 0 && ny < 0) {
+                ball.velocityV = -ball.velocityV * friction;
+            }
             
-            ball.x = rx + nx * ball.radius - ball.radius;
+            // Push the ball out of the rim so it doesn't get stuck
             ball.y = ry + ny * ball.radius - ball.radius;
         }
     }
