@@ -1,3 +1,4 @@
+
 public class PhysicsEngine {
     double gravity = 0.45;
     double friction = 0.65; 
@@ -7,7 +8,7 @@ public class PhysicsEngine {
         ball.velocityV += gravity;
         ball.y += ball.velocityV;
 
-        // 1. ALWAYS move towards the hoop! No moving backward.
+        // 1. Move towards the hoop
         if (hoop.isOnRight) {
             ball.velocityH = moveSpeed;
         } else {
@@ -15,19 +16,29 @@ public class PhysicsEngine {
         }
         ball.x += ball.velocityH;
 
-        // 2. CEILING (Don't die, just bounce down)
-        if (ball.y < 0) {
-            ball.y = 0;
-            ball.velocityV = Math.abs(ball.velocityV) * 0.3; // Soft bump on the ceiling
+        // --- 2. SCREEN WRAPPING (The Pac-Man Effect) ---
+        // If it goes entirely past the right edge, teleport to the left
+        if (ball.x > canvasWidth) {
+            ball.x = -ball.radius * 2; 
+        } 
+        // If it goes entirely past the left edge, teleport to the right
+        else if (ball.x + ball.radius * 2 < 0) {
+            ball.x = canvasWidth;
         }
 
-        // 3. FLOOR (Don't die, just bounce and slide)
+        // 3. CEILING (Don't die, just bounce down)
+        if (ball.y < 0) {
+            ball.y = 0;
+            ball.velocityV = Math.abs(ball.velocityV) * 0.3; // Soft bump
+        }
+
+        // 4. FLOOR (Don't die, just bounce and slide)
         if (ball.y + ball.radius * 2 > canvasHeight) {
             ball.y = canvasHeight - ball.radius * 2;
             ball.velocityV = -Math.abs(ball.velocityV) * 0.5; // Bounce off the floor
         }
 
-        // 4. Rim collisions (Only bounce vertically so it doesn't push you backward!)
+        // 5. Rim collisions
         resolveRimBounce(ball, hoop.x, hoop.y);
         resolveRimBounce(ball, hoop.x + hoop.width, hoop.y);
     }
@@ -42,12 +53,11 @@ public class PhysicsEngine {
             ball.hitRim = true;
             double ny = dy/dist;
             
-            // Only affect vertical velocity
+            // Only affect vertical velocity so it doesn't push you backward
             if (ball.velocityV > 0 && ny < 0) {
                 ball.velocityV = -ball.velocityV * friction;
             }
             
-            // Push the ball out of the rim so it doesn't get stuck
             ball.y = ry + ny * ball.radius - ball.radius;
         }
     }
