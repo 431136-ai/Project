@@ -1,11 +1,11 @@
 public class Hoop {
     double x, y;
-    int width = 60; 
+    int width = 70; 
+    int thickness = 8;
+    int netHeight = 60;
     boolean isOnRight = false; 
 
-    public Hoop(int canvasWidth) { 
-        reset(canvasWidth); 
-    }
+    public Hoop(int canvasWidth) { reset(canvasWidth); }
 
     public void reset(int canvasWidth) {
         isOnRight = !isOnRight; 
@@ -13,8 +13,7 @@ public class Hoop {
         updateResize(canvasWidth);
     }
 
-    // Keeps the hoop on the correct wall if the window goes fullscreen
     public void updateResize(int canvasWidth) {
-        this.x = isOnRight ? canvasWidth - width - 30 : 30;
+        this.x = isOnRight ? canvasWidth - width - 50 : 50;
     }
 }
