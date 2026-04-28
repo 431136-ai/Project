@@ -6,62 +6,56 @@ public class PhysicsEngine {
     public void applyPhysics(Ball ball, int canvasWidth, int canvasHeight, Hoop hoop) {
         ball.velocityV += gravity;
         ball.y += ball.velocityV;
-
-        // Constant horizontal movement based on hoop side
-        if (hoop.isOnRight) {
-            ball.velocityH = moveSpeed;
-        } else {
-            ball.velocityH = -moveSpeed;
-        }
+        ball.velocityH = hoop.isOnRight ? moveSpeed : -moveSpeed;
         ball.x += ball.velocityH;
 
-        // --- SCREEN WRAPPING (Pac-Man Effect) ---
-        // Backboard is now purely visual; ball passes through to wrap around
-        if (ball.x > canvasWidth) {
-            ball.x = -ball.radius * 2;
-        } else if (ball.x + ball.radius * 2 < 0) {
-            ball.x = canvasWidth;
-        }
+        // Screen Wrap
+        if (ball.x > canvasWidth) ball.x = -ball.radius * 2;
+        else if (ball.x + ball.radius * 2 < 0) ball.x = canvasWidth;
 
-        // Ceiling Boundary (Bounce down)
-        if (ball.y < 0) {
-            ball.y = 0;
-            ball.velocityV = Math.abs(ball.velocityV) * 0.3;
-        }
-
-        // Floor Boundary (Bounce up)
+        // Floor/Ceiling
+        if (ball.y < 0) { ball.y = 0; ball.velocityV = Math.abs(ball.velocityV) * 0.3; }
         if (ball.y + ball.radius * 2 > canvasHeight) {
             ball.y = canvasHeight - ball.radius * 2;
             ball.velocityV = -Math.abs(ball.velocityV) * 0.5;
         }
 
-        // Rim collisions
-        resolveRimBounce(ball, hoop.x, hoop.y);
-        resolveRimBounce(ball, hoop.x + hoop.width, hoop.y);
+        // Realistic Rim Bounces
+        resolveVectorBounce(ball, hoop.x, hoop.y);
+        resolveVectorBounce(ball, hoop.x + hoop.width, hoop.y);
     }
 
-    private void resolveRimBounce(Ball ball, double rx, double ry) {
+    private void resolveVectorBounce(Ball ball, double rx, double ry) {
         double bx = ball.x + ball.radius;
         double by = ball.y + ball.radius;
-        double dx = bx - rx, dy = by - ry;
-        double dist = Math.sqrt(dx*dx + dy*dy);
+        double dx = bx - rx;
+        double dy = by - ry;
+        double dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < ball.radius) {
             ball.hitRim = true;
-            double ny = dy/dist;
-            
-            // Bounce vertically off the rim
-            if (ball.velocityV > 0 && ny < 0) {
-                ball.velocityV = -ball.velocityV * friction;
-            }
-            
+            // Normal vector
+            double nx = dx / dist;
+            double ny = dy / dist;
+
+            // Dot product of velocity and normal
+            double dot = ball.velocityH * nx + ball.velocityV * ny;
+
+            // Reflect velocity: v = v - 2 * (v.n) * n
+            ball.velocityH = (ball.velocityH - 2 * dot * nx) * friction;
+            ball.velocityV = (ball.velocityV - 2 * dot * ny) * friction;
+
+            // Push ball out of rim to prevent overlap
+            ball.x = rx + nx * ball.radius - ball.radius;
             ball.y = ry + ny * ball.radius - ball.radius;
         }
     }
 
     public boolean checkScore(Ball b, Hoop h) {
-        // Scoring condition: passing downward through the hoop's center
-        return b.x + b.radius > h.x && b.x + b.radius < h.x + h.width &&
-               b.y + b.radius > h.y && b.y + b.radius < h.y + 15 && b.velocityV > 0;
+        // Strict top-down check: Ball center must be between rim edges 
+        // and moving downward while within a small Y-window
+        boolean withinX = (b.x + b.radius > h.x) && (b.x + b.radius < h.x + h.width);
+        boolean crossingRimY = (b.y + b.radius > h.y - 5) && (b.y + b.radius < h.y + 10);
+        return withinX && crossingRimY && b.velocityV > 0;
     }
 }
