@@ -41,9 +41,6 @@ Follow these steps to get the game running on your machine:
 ![Class Diagram](https://github.com/431136-ai/Project/blob/main/Images/mermaid-diagram.png)
 
 ### Gameplay Preview
-![]([https://github.com/431136-ai/ProjectGot](https://github.com/431136-ai/ProjectGot) it! You've already got the core content down in your draft. To make it look "solid" and professional on GitHub (while keeping exactly what you wrote), you just need to add some **Markdown formatting** (like bolding, code blocks, and dividers).
-
-Here is your exact text, but styled to look like a top-tier project README:
-
+![]([https://github.com/431136-ai/ProjectGot](https://github.com/431136-ai/ProjectGot) 
 ---
 
