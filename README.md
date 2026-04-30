@@ -12,8 +12,6 @@ As the game progresses, the difficulty increases with faster movement and tighte
 ## ✨ Key Features
 *   **Simple Controls:** Intuitive one-tap gameplay.
 *   **Realistic Physics:** Built with gravity, jump force, and vector reflections.
-*   **Dynamic Difficulty:** Moving hoops and shrinking windows for a real challenge.
-*   **Score Tracking:** Built-in system for high scores and "Swish" streaks.
 *   **Addictive Loop:** Fast restarts and quick sessions.
 
 ---
